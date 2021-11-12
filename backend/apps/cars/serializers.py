@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from .models import (
-    Mark, Year, MarkModel, Complectation, Detail, SubDetail
+    Mark, Part, Year, MarkModel, Complectation, Detail, SubDetail,
+    PartVariety, 
 )
 
 
@@ -79,3 +80,25 @@ class DetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Detail
         fields = ('id', 'name', 'sub_details', )
+
+
+class PartVarietyListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PartVariety
+        fields = ('id', 'name', 'price', )
+
+
+class PartListSerializer(serializers.ModelSerializer):
+    varieties = PartVarietyListSerializer(many=True)
+
+    class Meta:
+        model = Part
+        fields = ('id', 'name', 'price', 'status', 'varieties', )
+
+
+class SubDetailSerializer(serializers.ModelSerializer):
+    parts = PartListSerializer(many=True)
+
+    class Meta:
+        model = SubDetail
+        fields = ('id', 'name', 'parts', )

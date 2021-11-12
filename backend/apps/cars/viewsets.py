@@ -11,7 +11,7 @@ from .models import (
 from .serializers import (
     DetailListSerializer, MarkListSerializer, MarkYearSerializer, 
     YearSerializer, MarkModelSerializer,
-    ComplectationSerializer, DetailSerializer
+    ComplectationSerializer, DetailSerializer, SubDetailSerializer
 )
 
 
@@ -57,4 +57,11 @@ class MarkViewSet(mixins.ListModelMixin,
         detail_id = request.query_params['detail_id']
         detail = Detail.objects.get(id=detail_id)
         serializer = DetailSerializer(detail)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path='parts')
+    def get_parts(self, request, pk=None):
+        sub_detail_id = request.query_params['sub_detail_id']
+        sub_detail = SubDetail.objects.get(id=sub_detail_id)
+        serializer = SubDetailSerializer(sub_detail)
         return Response(serializer.data)
