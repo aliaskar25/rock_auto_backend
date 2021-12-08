@@ -1,45 +1,57 @@
-from django.db.models.base import Model
+from django.core import files
+
 import requests
 from bs4 import BeautifulSoup
 
-from random import randint
 from time import sleep
 from itertools import cycle
-import shutil
+import tempfile
 
 from apps.cars.models import *
 from apps.cars.choices import Status
 
 
 SITE = 'https://www.rockauto.com'
-PROXIE_LIST_REQUEST = requests.get('http://proxy.link/list/get/50266e6be7448405f09a9309d4de5058')
-PROXIES_LIST = [{'https': i} for i in PROXIE_LIST_REQUEST.text.split()]
+# PROXIE_LIST_REQUEST = requests.get('http://proxy.link/list/get/50266e6be7448405f09a9309d4de5058')
+# PROXIES_LIST = [{'https': i} for i in PROXIE_LIST_REQUEST.text.split()]
 
-def pick_proxie():
-    for proxie in cycle(PROXIES_LIST):
-        yield proxie
+# def pick_proxie():
+#     for proxie in cycle(PROXIES_LIST):
+#         yield proxie
 
-proxie = pick_proxie()
+# proxie = pick_proxie()
 
 
-def get_picture(part_page_link, proxie):
-    page_response = requests.get(part_page_link, proxies={'http': proxie})
+def get_picture(part_page_link, proxie=None, part_obj=None):
+    if proxie:
+        page_response = requests.get(part_page_link, proxies={'http': proxie})
+    else:
+        page_response = requests.get(part_page_link)
     page_soup = BeautifulSoup(page_response.text, 'lxml').\
                 find('img', {'class': 'listing-inline-image listing-inline-image-moreinfo'})
-    return f"{SITE}{page_soup['src']}"
+    download_picture(f"{SITE}{page_soup['src']}", None, part_obj)
 
 
-def download_picture(picture_link, proxie):
-    filename = picture_link.split('/')[-1]
-    picture_request = requests.get(picture_link, stream=True, proxies={'http': proxie})
-    picture_request.raw.decode_content = True
-    with open(f'pics/{filename}', 'wb') as f:
-        shutil.copyfileobj(picture_request.raw, f)
+def download_picture(picture_link, proxie=None, part_obj=None):
+    if proxie:
+        picture_request = requests.get(picture_link, stream=True, proxies={'http': proxie})
+    else:
+        picture_request = requests.get(picture_link, stream=True)
+    file_name = picture_link.split('/')[-1]
+    lf = tempfile.NamedTemporaryFile()
+    for block in picture_request.iter_content(1024 * 8):
+        if not block:
+            break
+        lf.write(block)
+    part_obj.image.save(file_name, files.File(lf))
 
 
 # takes link, then makes request, then makes a soup
-def make_soup(link, proxie):
-    response = requests.get(link, proxies={'http': proxie})
+def make_soup(link, proxie=None):
+    if proxie:
+        response = requests.get(link, proxies={'http': proxie})
+    else:
+        response = requests.get(link)
     soup = BeautifulSoup(response.text, 'lxml').find_all('div', {'class': 'ranavnode'})
     return soup
 
@@ -69,7 +81,7 @@ def get_marks(proxie) -> list:
 def get_years(mark_link, mark_obj, proxie) -> list:
     soup = make_soup(mark_link, proxie)
     years = []
-    for year in soup[1:]:
+    for year in soup[1:2]:
         year_dict = {}
 
         _year = year.find('a', {'class': 'navlabellink nvoffset nnormal'})
@@ -182,8 +194,9 @@ def get_parts(sub_detail_link, sub_detail_obj, proxie):
         ])
         price = i.find('span', {'class': 'ra-formatted-amount listing-price listing-amount-bold'}).text
 
-        part_obj, _ = Part.objects.get_or_create(name=name, sub_detail=sub_detail_obj)
-
+        part_obj, created = Part.objects.get_or_create(name=name, sub_detail=sub_detail_obj)
+        if created:
+            get_picture(i.find('a', {'class': 'ra-btn ra-btn-moreinfo'})['href'], None, part_obj)
         if price == 'See Options at Left':
             choices = i.find('select', {'class': 'listing-optionchoice-multiple'}).find_all('option')
             for i in choices[1:]:
@@ -209,42 +222,43 @@ def get_parts(sub_detail_link, sub_detail_obj, proxie):
 
 
 def main():
-    marks = get_marks(next(proxie))
+    marks = get_marks(None)
 
     for mark in marks:
-        years = get_years(mark['link'], mark['obj'],next(proxie))
-        sleep(1)
+        years = get_years(mark['link'], mark['obj'], None)
+        sleep(2)
 
         for year in years:
-            models = get_models(year['link'], year['obj'], next(proxie))
-            sleep(1)
+            models = get_models(year['link'], year['obj'], None)
+            sleep(2)
 
             for model in models:
                 complectations = get_complectations(
-                    model['link'], model['obj'], next(proxie)
+                    model['link'], model['obj'], None
                 )
-                sleep(1)
+                sleep(2)
 
                 for complectation in complectations:
                     details = get_details(
-                        complectation['link'], complectation['obj'], next(proxie)
+                        complectation['link'], complectation['obj'], None
                     )
-                    sleep(1)
+                    sleep(2)
 
                     for detail in details:
                         sub_details = get_sub_details(
-                            detail['link'], detail['obj'],  next(proxie)
+                            detail['link'], detail['obj'], None
                         )
-                        sleep(1)
+                        sleep(2)
 
                         for sub_detail in sub_details:
                             parts = get_parts(
-                                sub_detail['link'], sub_detail['obj'], next(proxie)
+                                sub_detail['link'], sub_detail['obj'], None
                             )
-                            sleep(1)
+                            sleep(2)
+    # _delete_all()
 
 
-def delete_all():
+def _delete_all():
     Country.objects.all().delete()
     Mark.objects.all().delete()
     Year.objects.all().delete()

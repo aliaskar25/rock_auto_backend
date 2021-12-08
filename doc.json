@@ -85,4 +85,93 @@ RESPONSE = {
 }
 =========================================================================================================
 
-пример самих запчастей скину позже
+ВЗЯТЬ САМИ ДЕТАЛИ (Parts) = "http://127.0.0.1:8000/api/cars/1/parts/?sub_detail_id=10"
+RESPONSE = {
+    "id": 10,
+    "name": "Coolant / Antifreeze",
+    "parts": [
+        {
+            "id": 21,
+            "name": "PRESTONE AF3300 {#AF3200} Prime®; Low Silicate Blend; 1 Gallon; Green; IAT",
+            "price": null,
+            "status": "In stock",
+            "varieties": [
+                {
+                    "id": 10,
+                    "name": "Prediluted [Private Label Package ] ",
+                    "price": 6.23
+                },
+                {
+                    "id": 11,
+                    "name": "Prediluted [Regular Inventory] ",
+                    "price": 7.32
+                },
+                {
+                    "id": 12,
+                    "name": "Concentrated [Private Label Package ] ",
+                    "price": 8.74
+                },
+                {
+                    "id": 13,
+                    "name": "Concentrated [Regular Inventory] ",
+                    "price": 10.88
+                }
+            ]
+        },
+        {
+            "id": 22,
+            "name": "PRESTONE AF555 LowTox® Blend; 1 Gallon; Green; IAT  ",
+            "price": 16.43,
+            "status": "In stock",
+            "varieties": []
+        },
+        {
+            "id": 23,
+            "name": "PRESTONE AF3100 {#AF3000} Prime® Extended Life; All Makes / All Models; 1 Gallon",
+            "price": null,
+            "status": "In stock",
+            "varieties": [
+                {
+                    "id": 14,
+                    "name": "Prediluted [Private Label Package ] ",
+                    "price": 6.45
+                },
+                {
+                    "id": 15,
+                    "name": "Prediluted [Regular Inventory] ",
+                    "price": 7.56
+                },
+                {
+                    "id": 16,
+                    "name": "Concentrated [Private Label Package ] ",
+                    "price": 8.95
+                }
+            ]
+        },
+        {
+            "id": 24,
+            "name": "PRESTONE AF2100 {#AF2000} Extended Life; All Makes / All Models; 1 Gallon",
+            "price": null,
+            "status": "In stock",
+            "varieties": [
+                {
+                    "id": 17,
+                    "name": "Prediluted ",
+                    "price": 11.6
+                },
+                {
+                    "id": 18,
+                    "name": "Concentrated ",
+                    "price": 17.27
+                }
+            ]
+        },
+        {
+            "id": 25,
+            "name": "PRESTONE AF2400 High Mileage Blend; 1 Gallon; Yellow  ",
+            "price": null,
+            "status": "Out of stock",
+            "varieties": []
+        }
+    ]
+}

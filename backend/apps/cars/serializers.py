@@ -93,7 +93,9 @@ class PartListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Part
-        fields = ('id', 'name', 'price', 'status', 'varieties', )
+        fields = (
+            'id', 'name', 'price', 'status', 'varieties', 'image', 
+        )
 
 
 class SubDetailSerializer(serializers.ModelSerializer):

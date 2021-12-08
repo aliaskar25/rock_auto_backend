@@ -82,6 +82,9 @@ class Part(models.Model):
     sub_detail = models.ForeignKey(
         SubDetail, on_delete=models.CASCADE, related_name='parts'
     )
+    image = models.ImageField(
+        upload_to='part_images', null=True, blank=True
+    )
 
     def __str__(self):
         return self.name
